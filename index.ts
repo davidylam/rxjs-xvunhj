@@ -1,51 +1,51 @@
 import './style.css';
 console.clear();
 
-// begin lesson code
-import { Observable } from 'rxjs';
+import { fromEvent, merge } from 'rxjs';
+import { mapTo } from 'rxjs/operators';
 
-/*
- * Observers can register up to 3 callbacks
- * next is called 1:M times to push new values to observer
- * error is called at most 1 time should an error occur
- * complete is called at most 1 time on completion.
- */
-const observer = {
-    next: value => console.log('next', value),
-    error: error => console.log('error', error),
-    complete: () => console.log('complete!')
+const btnA$ = fromEvent(document.getElementById('btnA'), 'click');
+const btnB$ = fromEvent(document.getElementById('btnB'), 'click');
+const btnC$ = fromEvent(document.getElementById('btnC'), 'click');
+const btnD$ = fromEvent(document.getElementById('btnD'), 'click');
+const btnE = document.getElementById('btnE');
+
+var greeting = 'Hello World';
+var employee = { first: 'George', last: 'Washington' };
+
+var displayA = function (msg) {
+  return 'Function A: ' + msg;
 };
 
-const observable = new Observable(subscriber => {
-    subscriber.next('Hello');
-    subscriber.next('World');
-    /*
-     * Once complete is called, observable will be cleaned up
-     * and no future values delivered.
-     */
-    subscriber.complete();
-    /*
-     * These values will not be logged as the observable
-     * has already completed.
-     */
-    subscriber.next('Hello');
-    subscriber.next('World');
+var displayB = function (msg) {
+  return 'Function B: ' + msg;
+};
+
+var displayC = function (msg) {
+  return 'Function C: ' + msg;
+};
+
+var display = function () {
+  console.log(employee);
+};
+
+var displayObj = function () {
+  console.log(employee);
+  console.log(greeting);
+  greeting = "Update in displayObj";
+};
+
+btnE.addEventListener('click',displayObj );
+
+merge(
+  btnA$.pipe(mapTo(displayA)),
+  btnB$.pipe(mapTo(displayB)),
+  btnC$.pipe(mapTo(displayC))
+).subscribe((x) => {
+  document.getElementById('msg').innerHTML = x(greeting);
+  employee.first = 'David';
+  employee.last = 'Lam';
+  console.log(`${employee.first} ${employee.last}`);
 });
 
-/* 
- * Subscribe hooks observer up to observable, beginning execution.
- * This creates a 1 to 1 relationship between the producer
- * (observable) and the consumer (observer).
- */
-observable.subscribe(observer);
-
-/********************
- * Have a question, comment, or just want to chat about RxJS?
- * Ping me on Ultimate Courses slack or on 
- * Twitter https://twitter.com/btroncone
- * I look forward to hearing from you!
- * For additional RxJS info and operator examples check out
- * Learn RxJS (https://www.learnrxjs.io) and
- * the Ultimate Course RxJS blog!
- * (https://ultimatecourses.com/blog/category/rxjs)
- ********************/
+btnD$.pipe(mapTo(display)).subscribe((func) => func());
